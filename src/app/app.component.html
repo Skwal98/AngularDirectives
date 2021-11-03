@@ -1,6 +1,6 @@
 
 <div class="main">
-  <div (zoom)='changeSize($event)' [style.height]='this.size + "px"' [style.width]='this.size + "px"' class="inner">
+  <div #dv drag (drag)='drag($event)' (zoom)='changeSize($event)' [style.height]='this.size + "px"' [style.width]='this.size + "px"' class="inner">
 
   </div>
 </div>

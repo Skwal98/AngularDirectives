@@ -3,12 +3,14 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { DragDirective } from './core/directives/drag.directive';
 import { ZoomDirective } from './core/directives/zoom.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ZoomDirective
+    ZoomDirective,
+    DragDirective
   ],
   imports: [
     BrowserModule,
