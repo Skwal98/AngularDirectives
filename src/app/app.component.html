@@ -1,8 +1,11 @@
 
 <div class="main">
-  <div #dv drag (drag)='drag($event)' (zoom)='changeSize($event)' [style.height]='this.size + "px"' [style.width]='this.size + "px"' class="inner">
-
+  <div #dv drag (drag)='drag($event)' (dragStart)='start()' (dragStop)='stop()' (zoom)='changeSize($event)' [style.height]='this.size + "px"' [style.width]='this.size + "px"' class="inner">
   </div>
+</div>
+
+<div class="drop-zone">
+
 </div>
 
 <style>
@@ -10,7 +13,7 @@
     position: relative;
     display: block;
     background-color: rebeccapurple;
-    width: 500px;
+    width: 100vh;
     height: 500px;
   }
 
@@ -19,5 +22,14 @@
     position: relative;
     display: inline-block;
     margin: 125px;
+  }
+
+  .drop-zone{
+    position: relative;
+    display: block;
+    background-color: lightblue;
+    width: 100vh;
+    z-index: -100;
+    height: 400px;
   }
 </style>

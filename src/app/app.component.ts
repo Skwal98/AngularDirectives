@@ -1,6 +1,6 @@
+import { animate, AnimationBuilder, AnimationPlayer, style } from '@angular/animations';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { fromEvent } from 'rxjs';
-import { Point } from './core/directives/drag.directive';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +12,7 @@ export class AppComponent {
   size = 250;
   @ViewChild('dv') div: ElementRef;
 
-  constructor() {
+  constructor(private _ab: AnimationBuilder) {
     
   }
 
@@ -23,11 +23,35 @@ export class AppComponent {
     console.log(value);
   }
 
-  drag(point: Point){
-  //  console.log(this.div);
-  //  console.log(point);
-    this.div.nativeElement.style.left = point.x - 250 + 'px';
-    this.div.nativeElement.style.top = point.y - 250 + 'px';
-    //console.log(x);
+  first = true;
+
+  drag([x, y]){
+    const {style} = this.div.nativeElement;
+    const finalX = x - this.initial[0];
+    const finalY = y - this.initial[1];
+    style.transform = `translate(${finalX}px, ${finalY}px)`
+  }
+
+  
+  initial: [number, number];
+  start(){
+    const element = this.div.nativeElement;
+    this.initial = [element.offsetLeft + element.clientWidth / 2, element.offsetTop + element.clientHeight / 2];
+  }
+
+  stop(){
+    const elStyle = this.div.nativeElement.style;
+    const returnAnimation = this._ab.build([
+      style({ transform: elStyle.transform }),
+      animate(200, style({ transform: `translate(0px, 0px)` }))
+    ]);
+
+    
+    const player = returnAnimation.create(this.div.nativeElement);    
+    player.onDone(() => { 
+      elStyle.transform =  `translate(0px, 0px)`;
+      player.destroy()
+    });
+    player.play();
   }
 }
