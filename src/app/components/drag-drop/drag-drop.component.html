@@ -1,10 +1,15 @@
 <div class="main">
-  <div #dv drag (myDrag)='drag($event)' (dragStart)='start()' (dragStop)='stop()' (zoom)='changeSize($event)' [style.height]='this.size + "px"' [style.width]='this.size + "px"' class="inner">
+  <div #dv drag (myDrag)='drag($event)' (dragStart)='start()' (dragStop)='stop()' (myDropped)='onDropped($event)' class="inner">
   </div>
 </div>
 
 <div class="drop-zone">
+  
 
+  <div myDrop id='first' class="drop-block"></div>
+  <div myDrop id='second' class="drop-block"></div>
+  <div myDrop id='third' class="drop-block"></div>
+  <div myDrop id='fourth' class="drop-block"></div>
 </div>
 
 <style>
@@ -21,14 +26,25 @@
     position: relative;
     display: inline-block;
     margin: 125px;
+    height: 80px;
+    width: 80px;
+    z-index: 100;
   }
 
   .drop-zone{
     position: relative;
     display: block;
     background-color: lightblue;
-    width: 100vh;
-    z-index: -100;
+    width: 100%;
     height: 400px;
+  }
+
+  .drop-block{
+    position: relative;
+    display: inline-block;
+    height: 80px;
+    width: 80px;
+    background-color: brown;
+    margin: 50px;
   }
 </style>

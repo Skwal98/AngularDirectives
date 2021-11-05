@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { DragDropComponent } from './components/drag-drop/drag-drop.component';
 import { ZoomComponent } from './components/zoom/zoom.component';
 import { DragDirective } from './core/directives/drag.directive';
+import { DropDirective } from './core/directives/drop.directive';
 import { ZoomDirective } from './core/directives/zoom.directive';
 
 @NgModule({
@@ -14,7 +15,8 @@ import { ZoomDirective } from './core/directives/zoom.directive';
     ZoomDirective,
     DragDirective,
     ZoomComponent,
-    DragDropComponent
+    DragDropComponent,
+    DropDirective
   ],
   imports: [
     BrowserModule,

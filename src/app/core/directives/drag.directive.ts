@@ -1,11 +1,11 @@
-import { DOCUMENT } from '@angular/common';
-import { Directive, ElementRef, inject, Output } from '@angular/core';
+import { Directive, ElementRef, Output } from '@angular/core';
 import {
   fromEvent,
   merge,
   Observable,
 } from 'rxjs';
 import {
+  filter,
   map,
   share,
   switchMap,
@@ -13,6 +13,7 @@ import {
   takeUntil,
   tap,
 } from 'rxjs/operators';
+import { DropDirective } from './drop.directive';
 
 @Directive({
   selector: '[myDrag]',
@@ -20,7 +21,8 @@ import {
 export class DragDirective {
   @Output('myDrag') drag: Observable<Point>;
   @Output('dragStart') dragStart: Observable<unknown>;
-  @Output('dragStop') dragStop: Observable<unknown>;
+  @Output('dragStop') dragStop: Observable<Point>;
+  @Output('myDropped') dropped$: Observable<Dropped>;
 
   constructor(elementRef: ElementRef) {
     const mouseDown$ = fromEvent(elementRef.nativeElement, 'mousedown');
@@ -40,10 +42,11 @@ export class DragDirective {
     );
     this.dragStop = this.dragStart.pipe(
       switchMap(() => moveUntil$.pipe(take(1))),
-      tap((x) => {
+      share(),
+      map((x: MouseEvent) => {
         x.preventDefault();
-      }),
-      share()
+        return [x.clientX, x.clientY];
+      })
     );
 
     this.drag = this.dragStart.pipe(
@@ -53,11 +56,21 @@ export class DragDirective {
         return [x.clientX, x.clientY];
       })
     );
+
+    this.dropped$ = this.dragStop.pipe(
+      map(x => new Dropped(DropDirective.checkInArea(x), this)),
+      filter(x => x.container !== undefined)
+      );
   }
 }
 
 export type Point = [number, number];
 
+export class Dropped{
+  constructor(
+  readonly container: DropDirective,
+  readonly item?: DragDirective){}
+}
 //old version drag:
 /*
         //old version

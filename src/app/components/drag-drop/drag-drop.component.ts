@@ -1,7 +1,7 @@
 import { animate, AnimationBuilder, AnimationPlayer, style } from '@angular/animations';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { fromEvent } from 'rxjs';
-import { Point } from '../../core/directives/drag.directive';
+import { Dropped, Point } from '../../core/directives/drag.directive';
 
 @Component({
   selector: 'app-drag',
@@ -10,18 +10,10 @@ import { Point } from '../../core/directives/drag.directive';
 })
 export class DragDropComponent {
   title = 'AngularDirectives';
-  size = 250;
   @ViewChild('dv') div: ElementRef;
 
   constructor(private _ab: AnimationBuilder) {
     
-  }
-
-  changeSize(value){
-    this.size = this.size + value;
-    this.size = Math.max(Math.min(350, this.size), 150);
-
-    console.log(value);
   }
 
   first = true;
@@ -54,5 +46,10 @@ export class DragDropComponent {
       player.destroy()
     });
     player.play();
+  }
+
+  onDropped(dropped: Dropped){
+    //dropped.container.element.nativeElement;
+    console.log(dropped);
   }
 }
