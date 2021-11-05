@@ -1,0 +1,22 @@
+
+<div class="main">
+  <div (zoom)='changeSize($event)' [style.height]='this.size + "px"' [style.width]='this.size + "px"' class="inner">
+  </div>
+</div>
+
+<style>
+  .main{
+    position: relative;
+    display: block;
+    background-color: rebeccapurple;
+    width: 100vh;
+    height: 500px;
+  }
+
+  .inner {
+    background-color: wheat;
+    position: relative;
+    display: inline-block;
+    margin: 125px;
+  }
+</style>

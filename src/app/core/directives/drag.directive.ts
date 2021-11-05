@@ -1,11 +1,13 @@
 import { DOCUMENT } from '@angular/common';
 import { Directive, ElementRef, inject, Output } from '@angular/core';
-import { concat, fromEvent, merge, Observable } from 'rxjs';
 import {
-  debounceTime,
+  fromEvent,
+  merge,
+  Observable,
+} from 'rxjs';
+import {
   map,
-  repeatWhen,
-  skipUntil,
+  share,
   switchMap,
   take,
   takeUntil,
@@ -13,15 +15,14 @@ import {
 } from 'rxjs/operators';
 
 @Directive({
-  selector: '[drag]',
+  selector: '[myDrag]',
 })
 export class DragDirective {
-  @Output('drag') drag: Observable<[number, number]>;
+  @Output('myDrag') drag: Observable<Point>;
   @Output('dragStart') dragStart: Observable<unknown>;
   @Output('dragStop') dragStop: Observable<unknown>;
 
   constructor(elementRef: ElementRef) {
-      
     const mouseDown$ = fromEvent(elementRef.nativeElement, 'mousedown');
     const { body } = document; //todo: change to token
     const mouseMove$ = fromEvent(document, 'mousemove');
@@ -30,24 +31,32 @@ export class DragDirective {
 
     const moveUntil$ = merge(mouseUp$, mouseLeave$);
 
-    this.dragStart = mouseDown$.pipe(switchMap(() => mouseMove$.pipe(take(1))));
-    this.dragStop = this.dragStart.pipe(switchMap(() => moveUntil$));
+    this.dragStart = mouseDown$.pipe(
+      switchMap(() => mouseMove$.pipe(take(1), takeUntil(moveUntil$))),
+      tap((x) => {
+        x.preventDefault();
+      }),
+      share()
+    );
+    this.dragStop = this.dragStart.pipe(
+      switchMap(() => moveUntil$.pipe(take(1))),
+      tap((x) => {
+        x.preventDefault();
+      }),
+      share()
+    );
 
     this.drag = this.dragStart.pipe(
       switchMap(() => mouseMove$.pipe(takeUntil(moveUntil$))),
-      map((x: MouseEvent) => [x.clientX, x.clientY])
+      map((x: MouseEvent) => {
+        x.preventDefault();
+        return [x.clientX, x.clientY];
+      })
     );
   }
 }
 
-export class Point {
-  x: number;
-  y: number;
-  constructor(x, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-}
+export type Point = [number, number];
 
 //old version drag:
 /*
@@ -68,3 +77,26 @@ export class Point {
                 skipUntil(mouseDown$),
                 map((x: MouseEvent) => new Point(x.clientX, x.clientY))
             );*/
+
+//old version second:
+
+
+    /* const mouseDown$ = fromEvent(elementRef.nativeElement, 'mousedown');
+    const { body } = document; //todo: change to token
+    const mouseMove$ = fromEvent(document, 'mousemove');
+    const mouseLeave$ = fromEvent(body, 'mouseleave');
+    const mouseUp$ = fromEvent(body, 'mouseup');
+
+    const moveUntil$ = merge(mouseUp$, mouseLeave$);
+
+    this.dragStart = mouseDown$.pipe(switchMap(() => mouseMove$.pipe(take(1), takeUntil(moveUntil$))), tap(x=> console.log('start')), share());
+    this.dragStop = this.dragStart.pipe(switchMap(() => moveUntil$.pipe(take(1))), tap(x=> console.log('stop')), share());
+
+    this.drag = this.dragStart.pipe(
+      switchMap(() => mouseMove$.pipe(takeUntil(moveUntil$))),
+      tap(x=> console.log('drag')),
+      map((x: MouseEvent) => {
+        return [x.clientX, x.clientY];
+      })
+    );
+  }*/
