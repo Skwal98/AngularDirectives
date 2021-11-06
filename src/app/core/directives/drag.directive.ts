@@ -1,115 +1,54 @@
-import { Directive, ElementRef, Output } from '@angular/core';
-import {
-  fromEvent,
-  merge,
-  Observable,
-} from 'rxjs';
-import {
-  filter,
-  map,
-  share,
-  switchMap,
-  take,
-  takeUntil,
-  tap,
-} from 'rxjs/operators';
+import { Directive, ElementRef, HostBinding, Inject, Input, Output } from '@angular/core';
+import { Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { Dropped } from 'src/app/components/models/dropped.model';
+import { AnimationService } from 'src/app/components/services/animation.service';
+import { DragDropService } from 'src/app/components/services/drag-drop.service';
+import { Point } from 'src/app/types/common.type';
 import { DropDirective } from './drop.directive';
 
 @Directive({
   selector: '[myDrag]',
+  providers: [DragDropService, AnimationService],
 })
 export class DragDirective {
-  @Output('myDrag') drag: Observable<Point>;
-  @Output('dragStart') dragStart: Observable<unknown>;
-  @Output('dragStop') dragStop: Observable<Point>;
   @Output('myDropped') dropped$: Observable<Dropped>;
+  @Input('value') value: any;
 
-  constructor(elementRef: ElementRef) {
-    const mouseDown$ = fromEvent(elementRef.nativeElement, 'mousedown');
-    const { body } = document; //todo: change to token
-    const mouseMove$ = fromEvent(document, 'mousemove');
-    const mouseLeave$ = fromEvent(body, 'mouseleave');
-    const mouseUp$ = fromEvent(body, 'mouseup');
+  readonly element: ElementRef<HTMLElement>;
+  initialPoint: Point;
 
-    const moveUntil$ = merge(mouseUp$, mouseLeave$);
+  @HostBinding('class.isMoving')
+  isMoving = false;
 
-    this.dragStart = mouseDown$.pipe(
-      switchMap(() => mouseMove$.pipe(take(1), takeUntil(moveUntil$))),
-      tap((x) => {
-        x.preventDefault();
-      }),
-      share()
-    );
-    this.dragStop = this.dragStart.pipe(
-      switchMap(() => moveUntil$.pipe(take(1))),
-      share(),
-      map((x: MouseEvent) => {
-        x.preventDefault();
-        return [x.clientX, x.clientY];
-      })
+  constructor(
+    @Inject(ElementRef) elementRef: ElementRef,
+    @Inject(DragDropService) readonly dragDrop: DragDropService,
+    @Inject(AnimationService) readonly animation: AnimationService,
+  ) {
+    const {nativeElement} = elementRef;
+    this.element = elementRef;
+    this.dropped$ = this.dragDrop.end$.pipe(
+      map((x) => new Dropped(DropDirective.checkInArea(x), this)),
+      filter((x) => x.container !== undefined)
     );
 
-    this.drag = this.dragStart.pipe(
-      switchMap(() => mouseMove$.pipe(takeUntil(moveUntil$))),
-      map((x: MouseEvent) => {
-        x.preventDefault();
-        return [x.clientX, x.clientY];
-      })
-    );
+    this.dragDrop.start$.subscribe(() => {
+      const element = nativeElement;
+      this.isMoving = true;
+      this.initialPoint = [element.offsetLeft + element.clientWidth / 2, element.offsetTop + element.clientHeight / 2];
+    });
 
-    this.dropped$ = this.dragStop.pipe(
-      map(x => new Dropped(DropDirective.checkInArea(x), this)),
-      filter(x => x.container !== undefined)
-      );
+    this.dragDrop.move$.subscribe((point: Point) => {
+      const {style} = nativeElement;
+      const finalX = point[0] - this.initialPoint[0];
+      const finalY = point[1] - this.initialPoint[1];
+      style.transform = `translate(${finalX}px, ${finalY}px)`
+    });
+
+    this.dragDrop.end$.subscribe(() => {
+      this.isMoving = false;
+      this.animation.animateToNullTransform();
+    });
   }
 }
-
-export type Point = [number, number];
-
-export class Dropped{
-  constructor(
-  readonly container: DropDirective,
-  readonly item?: DragDirective){}
-}
-//old version drag:
-/*
-        //old version
-        const {body} = document; //todo: change to token
-        const mouseDown$ = fromEvent(elementRef.nativeElement, 'mousedown');
-        const mouseUp$ = fromEvent(body, 'mouseup');
-        const mouseMove$ = fromEvent(elementRef.nativeElement, 'mousemove');
-        const mouseLeave$ = fromEvent(body, 'mouseleave');
-
-        const moveUntil$ = merge(mouseUp$, mouseLeave$);
-
-        this.drag = mouseMove$ 
-            .pipe(
-                debounceTime(2),
-                takeUntil(moveUntil$),
-                repeatWhen(() => mouseDown$),
-                skipUntil(mouseDown$),
-                map((x: MouseEvent) => new Point(x.clientX, x.clientY))
-            );*/
-
-//old version second:
-
-
-    /* const mouseDown$ = fromEvent(elementRef.nativeElement, 'mousedown');
-    const { body } = document; //todo: change to token
-    const mouseMove$ = fromEvent(document, 'mousemove');
-    const mouseLeave$ = fromEvent(body, 'mouseleave');
-    const mouseUp$ = fromEvent(body, 'mouseup');
-
-    const moveUntil$ = merge(mouseUp$, mouseLeave$);
-
-    this.dragStart = mouseDown$.pipe(switchMap(() => mouseMove$.pipe(take(1), takeUntil(moveUntil$))), tap(x=> console.log('start')), share());
-    this.dragStop = this.dragStart.pipe(switchMap(() => moveUntil$.pipe(take(1))), tap(x=> console.log('stop')), share());
-
-    this.drag = this.dragStart.pipe(
-      switchMap(() => mouseMove$.pipe(takeUntil(moveUntil$))),
-      tap(x=> console.log('drag')),
-      map((x: MouseEvent) => {
-        return [x.clientX, x.clientY];
-      })
-    );
-  }*/

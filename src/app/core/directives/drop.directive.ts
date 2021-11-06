@@ -1,33 +1,28 @@
-import { DOCUMENT } from '@angular/common';
 import {
   Directive,
   ElementRef,
-  Inject,
-  inject,
-  Input,
-  Optional,
-  Output,
+  Input
 } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Point } from './drag.directive';
+import { Point } from 'src/app/types/common.type';
 
 @Directive({
   selector: '[myDrop]',
 })
-export class DropDirective {
+export class DropDirective<T> {
   @Input('id') id: string;
-  @Output('myDrop') drop$: Observable<unknown>;
+  @Input('receiver') receiver = true;
+  @Input('value') value: T;
 
-  private static _dropContainners: DropDirective[] = [];
-  readonly element: ElementRef<HTMLElement>;
+  private static _dropContainners: DropDirective<any>[] = [];
+  readonly element: ElementRef;
 
   constructor(elementRef: ElementRef) {
     DropDirective._dropContainners.push(this);
     this.element = elementRef;
   }
 
-  public static checkInArea(point: Point): DropDirective | null {
-    return this._dropContainners.find((x) => {
+  public static checkInArea(point: Point): DropDirective<any> | null {
+    return this._dropContainners.filter(x => x.receiver).find((x) => {
       const dropRect = x.element.nativeElement.getBoundingClientRect();
       const pointX = point[0];
       const pointY = point[1];

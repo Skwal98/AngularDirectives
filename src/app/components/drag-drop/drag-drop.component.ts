@@ -1,7 +1,7 @@
-import { animate, AnimationBuilder, AnimationPlayer, style } from '@angular/animations';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { fromEvent } from 'rxjs';
-import { Dropped, Point } from '../../core/directives/drag.directive';
+import { Component } from '@angular/core';
+import { Dropped } from '../models/dropped.model';
+import { shuffle } from '../utils/common.utils';
+import { Answer } from './models/answer.model';
 
 @Component({
   selector: 'app-drag',
@@ -9,47 +9,22 @@ import { Dropped, Point } from '../../core/directives/drag.directive';
   styleUrls: ['./drag-drop.component.sass']
 })
 export class DragDropComponent {
-  title = 'AngularDirectives';
-  @ViewChild('dv') div: ElementRef;
+  answers: Answer[];
+  letters: string[];
 
-  constructor(private _ab: AnimationBuilder) {
-    
-  }
-
-  first = true;
-
-  drag(point: Point){
-    const {style} = this.div.nativeElement;
-    const finalX = point[0] - this.initial[0];
-    const finalY = point[1] - this.initial[1];
-    style.transform = `translate(${finalX}px, ${finalY}px)`
-  }
-
-  
-  initial: [number, number];
-  start(){
-    const element = this.div.nativeElement;
-    this.initial = [element.offsetLeft + element.clientWidth / 2, element.offsetTop + element.clientHeight / 2];
-  }
-
-  stop(){
-    const elStyle = this.div.nativeElement.style;
-    const returnAnimation = this._ab.build([
-      style({ transform: elStyle.transform }),
-      animate(200, style({ transform: `translate(0px, 0px)` }))
-    ]);
-
-    
-    const player = returnAnimation.create(this.div.nativeElement);    
-    player.onDone(() => { 
-      elStyle.transform =  `translate(0px, 0px)`;
-      player.destroy()
-    });
-    player.play();
+  constructor() {
+    const word = "Phone".toUpperCase();
+    this.answers = word.split('').map(x => new Answer(x, false));
+    this.letters = shuffle(word.split(''));
   }
 
   onDropped(dropped: Dropped){
-    //dropped.container.element.nativeElement;
-    console.log(dropped);
+    const answer = dropped.container.value;
+    if (answer.letter === dropped.item.value){
+      answer.isAnswered = true;
+      dropped.item.element.nativeElement.remove();
+    } else {
+      dropped.item.element.nativeElement.classList.add('fail');
+    }
   }
 }

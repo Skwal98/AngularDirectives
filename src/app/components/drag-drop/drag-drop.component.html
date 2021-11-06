@@ -1,50 +1,79 @@
-<div class="main">
-  <div #dv drag (myDrag)='drag($event)' (dragStart)='start()' (dragStop)='stop()' (myDropped)='onDropped($event)' class="inner">
-  </div>
-</div>
-
-<div class="drop-zone">
-  
-
-  <div myDrop id='first' class="drop-block"></div>
-  <div myDrop id='second' class="drop-block"></div>
-  <div myDrop id='third' class="drop-block"></div>
-  <div myDrop id='fourth' class="drop-block"></div>
+<div class="common">
+    <div class="drop-block">     
+      <div myDrop
+          *ngFor="let answer of answers"
+          [receiver]='!answer.isAnswered'
+          [value]='answer'
+          class="letter-container">
+          <span *ngIf="answer.isAnswered">
+            {{answer.letter}}
+          </span>
+        </div>  
+    </div>
+    <div class="drag-block">
+      <div myDrag
+          *ngFor="let letter of letters"
+          (myDropped)='onDropped($event)' 
+          [value]='letter' 
+          class="letter">
+          {{letter}}
+        </div>
+    </div>
 </div>
 
 <style>
-  .main{
-    position: relative;
-    display: block;
-    background-color: rebeccapurple;
-    width: 100vh;
-    height: 500px;
+  .common{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 90vh;
   }
 
-  .inner {
-    background-color: wheat;
-    position: relative;
-    display: inline-block;
-    margin: 125px;
-    height: 80px;
-    width: 80px;
-    z-index: 100;
+  .drop-block, .drag-block{
+    display: flex;
+    justify-content: center;
   }
 
-  .drop-zone{
-    position: relative;
-    display: block;
-    background-color: lightblue;
-    width: 100%;
-    height: 400px;
+  .drag-block{
+    margin-top: 150px;
   }
 
-  .drop-block{
-    position: relative;
-    display: inline-block;
-    height: 80px;
-    width: 80px;
-    background-color: brown;
-    margin: 50px;
+  .letter-container{
+    height: 50px;
+    width: 50px;
+    margin:10px;
+    background-color: #f3f3f3;
+    border: 1px solid;
+    border-color: #cecece;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .letter{
+    height: 40px;
+    width: 40px;
+    margin: 10px;
+    background-color: #76be67;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    user-select: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .fail{
+    background-color: #ff5e5e;
+  }
+
+  .isMoving{
+    z-index: 9999;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
   }
 </style>
