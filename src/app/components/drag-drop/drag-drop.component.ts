@@ -19,10 +19,12 @@ export class DragDropComponent {
   }
 
   onDropped(dropped: Dropped){
+    console.log('dropped from component');
     const answer = dropped.container.value;
     if (answer.letter === dropped.item.value){
       answer.isAnswered = true;
       dropped.item.element.nativeElement.remove();
+      dropped.preventDefault();
     } else {
       dropped.item.element.nativeElement.classList.add('fail');
     }

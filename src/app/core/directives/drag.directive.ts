@@ -1,6 +1,6 @@
 import { Directive, ElementRef, HostBinding, Inject, Input, Output } from '@angular/core';
 import { Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, take, tap } from 'rxjs/operators';
 import { Dropped } from 'src/app/components/models/dropped.model';
 import { AnimationService } from 'src/app/components/services/animation.service';
 import { DragDropService } from 'src/app/components/services/drag-drop.service';
@@ -23,32 +23,36 @@ export class DragDirective {
 
   constructor(
     @Inject(ElementRef) elementRef: ElementRef,
-    @Inject(DragDropService) readonly dragDrop: DragDropService,
+    @Inject(DragDropService) readonly dragService: DragDropService,
     @Inject(AnimationService) readonly animation: AnimationService,
   ) {
     const {nativeElement} = elementRef;
     this.element = elementRef;
-    this.dropped$ = this.dragDrop.end$.pipe(
+    this.dropped$ = this.dragService.end$.pipe(
       map((x) => new Dropped(DropDirective.checkInArea(x), this)),
-      filter((x) => x.container !== undefined)
-    );
+      tap((x: Dropped) => {
+        setTimeout(() => {
+          if (!x.isPrevented){
+            this.isMoving = false;
+            this.animation.animateToNullTransform();
+          }
+        }, 0);
+        return x;
+      }),
+      filter((x: Dropped) => x.container !== undefined),
+     );
 
-    this.dragDrop.start$.subscribe(() => {
+    this.dragService.start$.subscribe(() => {
       const element = nativeElement;
       this.isMoving = true;
       this.initialPoint = [element.offsetLeft + element.clientWidth / 2, element.offsetTop + element.clientHeight / 2];
     });
 
-    this.dragDrop.move$.subscribe((point: Point) => {
+    this.dragService.move$.subscribe((point: Point) => {
       const {style} = nativeElement;
       const finalX = point[0] - this.initialPoint[0];
       const finalY = point[1] - this.initialPoint[1];
       style.transform = `translate(${finalX}px, ${finalY}px)`
-    });
-
-    this.dragDrop.end$.subscribe(() => {
-      this.isMoving = false;
-      this.animation.animateToNullTransform();
     });
   }
 }
