@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-import { Dropped } from '../models/dropped.model';
-import { shuffle } from '../utils/common.utils';
+import { Component, ElementRef } from '@angular/core';
+import { Dropped } from '../../models/dropped.model';
+import { shuffle } from '../../utils/common.utils';
 import { Answer } from './models/answer.model';
 
 @Component({

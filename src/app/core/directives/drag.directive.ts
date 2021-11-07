@@ -1,9 +1,9 @@
 import { Directive, ElementRef, HostBinding, Inject, Input, Output } from '@angular/core';
 import { Observable } from 'rxjs';
-import { filter, map, take, tap } from 'rxjs/operators';
-import { Dropped } from 'src/app/components/models/dropped.model';
-import { AnimationService } from 'src/app/components/services/animation.service';
-import { DragDropService } from 'src/app/components/services/drag-drop.service';
+import { filter, map, tap } from 'rxjs/operators';
+import { Dropped } from 'src/app/models/dropped.model';
+import { AnimationService } from 'src/app/services/animation.service';
+import { DragDropService } from 'src/app/services/drag-drop.service';
 import { Point } from 'src/app/types/common.type';
 import { DropDirective } from './drop.directive';
 
@@ -31,6 +31,7 @@ export class DragDirective {
     this.dropped$ = this.dragService.end$.pipe(
       map((x) => new Dropped(DropDirective.checkInArea(x), this)),
       tap((x: Dropped) => {
+        //setTimeout set next code in last MictoTaskQueie, these lines will be run after subscribers code
         setTimeout(() => {
           if (!x.isPrevented){
             this.isMoving = false;

@@ -1,0 +1,31 @@
+Custom let
+<br>
+<button (click)='show()'>Show</button>
+<button (click)='hide()'>Hide</button>
+<br>
+<span>As wuth ngIf:</span>
+<div *ngIf='showing$ | async as show'>
+  Hide content: {{show}}
+  Hide content: {{show}}
+</div>
+<br>
+<span>As with let:</span>
+<div *myLet='showing$ | async as show'>
+  Hide content: {{show}}
+  Hide content: {{show}}
+</div>
+<br>
+<span>As with let:</span>
+<div *myLet='showing$ | async; let show = myLet'>
+  Hide content: {{show}}
+  Hide content: {{show}}
+</div>
+<br>
+
+
+
+<!-- custom vatiable
+<div *myLet='let a = test'>
+  {{a}}
+</div>
+-->

@@ -11,9 +11,9 @@
         </div>  
     </div>
     <div class="drag-block">
-      <div myDrag
+      <div myDrag 
           *ngFor="let letter of letters"
-          (myDropped)='onDropped($event)' 
+          (myDropped)='onDropped($event)'
           [value]='letter' 
           class="letter">
           {{letter}}
